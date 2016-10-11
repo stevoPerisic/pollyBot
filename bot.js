@@ -33,7 +33,7 @@ app.get('/webhook', function (req, res) {
 function sendMessage(recipientId, message) {
     request({
         url: 'https://graph.facebook.com/v2.6/me/messages',
-        qs: {access_token: process.env.FB_ACCESS_TOKEN},
+        qs: {access_token: process.env.FB_PAGE_ACCESS_TOKEN},
         method: 'POST',
         json: {
             recipient: {id: recipientId},
