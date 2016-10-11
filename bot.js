@@ -49,9 +49,9 @@ function sendMessage(recipientId, message) {
 };
 
 // handler receiving messages
-app.post('/webhook', function (req, res) {
-	console.log("FB request: \n");
-	console.log(req);
+app.post('/webhook', jsonParser, function (req, res) {
+	// console.log("FB request: \n");
+	// console.log(req);
     var events = req.body.entry[0].messaging;
     for (i = 0; i < events.length; i++) {
         var event = events[i];
