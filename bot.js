@@ -14,3 +14,14 @@ app.use('/static', express.static(__dirname + '/public'));
 app.listen((process.env.PORT || 5000), function () {
   console.log('Listening on port 5000');
 });
+
+// Facebook webhook
+app.get('/webhook', function (req, res) {
+	// This enables subscription to the webhooks
+	if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === process.env.FACEBOOK_VERIFY_TOKEN) {
+		res.send(req.query['hub.challenge'])
+	}
+	else {
+		res.send('Incorrect verify token')
+	}
+});
