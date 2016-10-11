@@ -18,9 +18,9 @@ app.listen((process.env.PORT || 5000), function () {
 // Facebook webhook
 app.get('/webhook', function (req, res) {
 	// This enables subscription to the webhooks
-	console.log(req.query['hub.verify_token']);
-	console.log(process.env.FACEBOOK_VERIFY_TOKEN);
-	if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === process.env.FACEBOOK_VERIFY_TOKEN) {
+	// console.log(req.query['hub.verify_token']);
+	// console.log(process.env.FB_VERIFY_TOKEN);
+	if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === process.env.FB_VERIFY_TOKEN) {
 		res.send(req.query['hub.challenge'])
 	}
 	else {
