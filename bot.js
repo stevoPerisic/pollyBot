@@ -3,6 +3,7 @@ var app = express();
 var bodyParser = require('body-parser');
 var jsonParser = bodyParser.json();
 var Botkit = require('botkit');
+var request = require('request');
 
 app.get('/', function (req, res) {
 	res.sendStatus(200);
@@ -27,3 +28,31 @@ app.get('/webhook', function (req, res) {
 		res.send('Incorrect verify token')
 	}
 });
+
+// handler receiving messages
+app.post('/webhook', function (req, res) {
+    var events = req.body.entry[0].messaging;
+    for (i = 0; i < events.length; i++) {
+        var event = events[i];
+        if (event.message && event.message.text) {
+            sendMessage(event.sender.id, {text: "Echo: " + event.message.text});
+        }
+    }
+    res.sendStatus(200);
+});
+
+// subscribe to page events
+request.post('https://graph.facebook.com/me/subscribed_apps?access_token=' + process.env.FB_PAGE_ACCESS_TOKEN,
+  function (err, res, body) {
+    if (err) {
+      console.log('Could not subscribe to page messages')
+    }
+    else {
+      console.log('Successfully subscribed to Facebook events:', body)
+      console.log('Botkit activated');
+
+      // start ticking to send conversation messages
+      // handler.controllerFB.startTicking()
+    }
+  }
+);
