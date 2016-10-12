@@ -49,18 +49,28 @@ function sendMessage(recipientId, message) {
 };
 
 // handler receiving messages
-app.post('/webhook', jsonParser, function (req, res) {
-	// console.log("FB request: \n");
-	// console.log(req);
-    var events = req.body.entry[0].messaging;
-    for (i = 0; i < events.length; i++) {
-        var event = events[i];
-        if (event.message && event.message.text) {
-            sendMessage(event.sender.id, {text: "Echo: " + event.message.text});
-        }
-    }
-    res.sendStatus(200);
+// app.post('/webhook', jsonParser, function (req, res) {
+// 	// console.log("FB request: \n");
+// 	// console.log(req);
+//     var events = req.body.entry[0].messaging;
+//     for (i = 0; i < events.length; i++) {
+//         var event = events[i];
+//         if (event.message && event.message.text) {
+//             sendMessage(event.sender.id, {text: "Echo: " + event.message.text});
+//         }
+//     }
+//     res.sendStatus(200);
+// });
+
+// This is the Botkit controller for facebook messenger
+var controllerFB = Botkit.facebookbot({
+    debug: true,
+    access_token: process.env.FB_PAGE_ACCESS_TOKEN,
+    verify_token: process.env.FB_VERIFY_TOKEN
 });
+
+// new instance of the bot
+var bot = controllerFB.spawn({});
 
 // subscribe to page events
 request.post('https://graph.facebook.com/me/subscribed_apps?access_token=' + process.env.FB_PAGE_ACCESS_TOKEN,
@@ -73,7 +83,35 @@ request.post('https://graph.facebook.com/me/subscribed_apps?access_token=' + pro
       console.log('Botkit activated');
 
       // start ticking to send conversation messages
-      // handler.controllerFB.startTicking()
+      controllerFB.startTicking();
     }
   }
 );
+
+
+controllerFB.setupWebserver(process.env.port || 3000, function(err, webserver) {
+    controllerFB.createWebhookEndpoints(webserver, bot, function() {
+        console.log('ONLINE!');
+        if(ops.lt) {
+            var tunnel = localtunnel(process.env.port || 3000, {subdomain: ops.ltsubdomain}, function(err, tunnel) {
+                if (err) {
+                    console.log(err);
+                    process.exit();
+                }
+                console.log("Your bot is available on the web at the following URL: " + tunnel.url + '/facebook/receive');
+            });
+
+            tunnel.on('close', function() {
+                console.log("Your bot is no longer available on the web at the localtunnnel.me URL.");
+                process.exit();
+            });
+        }
+    });
+});
+
+// listen to some text
+controllerFB.hears(['Hello'], 'message_received', function (bot, message) {
+  	bot.reply(message, {
+    	"text":"Hello and welcome to Perisic Designs!" 
+	});
+});
