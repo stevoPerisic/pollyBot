@@ -40,7 +40,7 @@ handler.controllerFB = Botkit.facebookbot({
 var bot = handler.controllerFB.spawn({});
 
 // add our custom bot message handler because we are using express as our server for both the bot and the consumer/backend app
-controllerFB.handlerFB = require('./lib/fb_handler');
+handler.controllerFB.handlerFB = require('./lib/fb_handler');
 
 // handler receiving messages
 app.post('/webhook', jsonParser, function (req, res) {
@@ -61,7 +61,7 @@ request.post('https://graph.facebook.com/me/subscribed_apps?access_token=' + pro
       console.log('Botkit activated');
 
       // start ticking to send conversation messages
-      controllerFB.startTicking();
+      handler.controllerFB.startTicking();
     }
   }
 );
