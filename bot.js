@@ -102,7 +102,17 @@ request.post(
 
 // this is triggered when a user clicks the send-to-messenger plugin
 handler.controllerFB.on('facebook_optin', function (bot, message) {
+	// reply with nice message
+	// 
+
+	// what can be done here??? how to trigger this was unable to do that yet
+
+
   	bot.reply(message, 'Welcome, friend')
+});
+
+handler.controllerFB.on('tick', function (bot, message) {
+	console.log('Ticking...');
 });
 
 // listen to some text
