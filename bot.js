@@ -4,6 +4,7 @@ var bodyParser = require('body-parser');
 var jsonParser = bodyParser.json();
 var Botkit = require('botkit');
 var request = require('request');
+var handler = require('./lib/fb_handler'); // facebook bot handler
 
 app.get('/', function (req, res) {
 	res.sendStatus(200);
@@ -19,8 +20,6 @@ app.listen((process.env.PORT || 5000), function () {
 // Facebook webhook
 app.get('/webhook', function (req, res) {
 	// This enables subscription to the webhooks
-	// console.log(req.query['hub.verify_token']);
-	// console.log(process.env.FB_VERIFY_TOKEN);
 	if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === process.env.FB_VERIFY_TOKEN) {
 		res.send(req.query['hub.challenge'])
 	}
@@ -30,7 +29,7 @@ app.get('/webhook', function (req, res) {
 });
 
 // generic function sending messages
-var handler = require('./lib/fb_handler');
+
 handler.controllerFB = Botkit.facebookbot({
     debug: true,
     access_token: process.env.FB_PAGE_ACCESS_TOKEN,
@@ -66,9 +65,193 @@ request.post('https://graph.facebook.com/me/subscribed_apps?access_token=' + pro
   }
 );
 
+// Set up the Greeting text
+request.post(
+	{
+		url:'https://graph.facebook.com/v2.6/me/thread_settings?access_token=' + process.env.FB_PAGE_ACCESS_TOKEN, 
+		form: {
+			"setting_type":"greeting",
+			"greeting":{
+				"text":"Hi {{user_first_name}}, welcome to this Polly. Tap 'Get started' or type 'Start' to get started."
+			}
+		}
+	}, 
+	function(err,httpResponse,body){
+		if(err){
+			console.log(err);
+		}
+	}
+);
+
+// Set up the Get started button
+request.post(
+	{
+		url:'https://graph.facebook.com/v2.6/me/thread_settings?access_token=' + process.env.FB_PAGE_ACCESS_TOKEN, 
+		form: {
+			"setting_type":"call_to_actions",
+			"thread_state":"new_thread",
+			"call_to_actions":[{ "payload":"Get started" }]
+		}
+	}, 
+	function(err,httpResponse,body){
+		if(err){
+			console.log(err);
+		}
+	}
+);
+
+// this is triggered when a user clicks the send-to-messenger plugin
+handler.controllerFB.on('facebook_optin', function (bot, message) {
+  	bot.reply(message, 'Welcome, friend')
+});
+
 // listen to some text
 handler.controllerFB.hears(['Hello'], 'message_received', function (bot, message) {
   	bot.reply(message, {
     	"text":"Hello and welcome to Perisic Designs!" 
+	});
+});
+
+handler.controllerFB.on('facebook_postback', function (bot, message) {
+	var surveyResponse;
+
+	if(message.payload === 'Get started'){
+		bot.reply(message, {
+	    	"attachment":{
+	    		"type":"template",
+				"payload":{
+					"template_type": "button",
+					"text": "Would you mind answering a few questions?",
+					"buttons":[
+						{
+							"type": "postback",
+							"title": "Let's get to it!",
+							"payload": "Start Survey"
+						},
+						{
+							"type": "postback",
+							"title": "Not interested.",
+							"payload": "Decline Survey"
+						}
+					]
+				}
+			}
+		});
+	} else if(message.payload.indexOf('Survey Answer: ') > -1) {
+		bot.reply(message, "you selected: "+message.payload.replace('Survey Answer: ', ''));
+		surveyResponse = {
+			user: message.user,
+			answer: message.payload.replace('Survey Answer: ', '')
+		};
+		console.log("Survey response: ");
+		console.log(surveyResponse);
+		storage.create(surveyResponse);
+
+	} else {
+		return true;
+	}
+});
+
+// Survey declined
+handler.controllerFB.hears(['Decline Survey'], 'message_received', function (bot, message) {
+  	bot.reply(message, {
+    	"text":"Sorry to hear that." 
+	});
+});
+
+// Survey start
+handler.controllerFB.hears(['Start Survey'], 'message_received', function (bot,message) {
+	// This is the start of the survey demo
+	// only created for the Monday demo
+
+	var question1 = {
+		"text": "On the scale of 1-5, how  would you rate the first part of your visit with Dr. Jones?"
+	};
+
+	var question2 = {
+    	"attachment":{
+    		"type":"template",
+			"payload":{
+				"template_type": "button",
+				"text": "Based on your experience so far, would you refer a friend?",
+				"buttons":[
+					{
+						// "type": "web_url",
+						// "url": "http://www.perisicdesigns.com",
+						"type": "postback",
+						"title": "Red pill",
+						"payload": "Survey Answer: Red pill"
+					},
+					{
+						"type": "postback",
+						"title": "Blue pill",
+						"payload": "Survey Answer: Blue pill"
+					}
+				]
+			}
+		}
+	};
+
+	var question3 = {
+    	"attachment":{
+    		"type":"template",
+			"payload":{
+				"template_type": "button",
+				"text": "Is there anything special about your visit that we should know about?",
+				"buttons":[
+					{
+						// "type": "web_url",
+						// "url": "http://www.perisicdesigns.com",
+						"type": "postback",
+						"title": "Red pill",
+						"payload": "Survey Answer: Red pill"
+					},
+					{
+						"type": "postback",
+						"title": "Blue pill",
+						"payload": "Survey Answer: Blue pill"
+					}
+				]
+			}
+		}
+	};
+
+	bot.startConversation(message,function(err,convo) {
+		console.log('convo started');
+
+		convo.ask(question1, [{
+				pattern: '5', // digits
+				callback: function(response, convo){
+					// bot.reply('Thank you!');
+					console.log('Pattern Response --');
+					console.log(response);
+					// storage.create({user: response.user, answer: response.text});
+					convo.next();
+				}
+			}, {
+                default: true,
+                callback: function(response, convo) {
+                    // bot.reply('I did not recognize that answer.');
+                    console.log('Default Response --');
+					console.log(response);
+                    convo.repeat();
+                    convo.next();
+                }
+            }
+		]);
+
+		convo.ask(question2, function(response, convo){
+			convo.next();
+		});
+
+		convo.on('end', function(convo) {
+			if (convo.status == 'completed') {
+				bot.reply(message, 'Thank you for participating in our survey!');
+			} else {
+				// this happens if the conversation ended prematurely for some reason
+				bot.reply(message, 'Ooops something went wrong...');
+			}
+		});
+
 	});
 });
