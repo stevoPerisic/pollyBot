@@ -37,7 +37,7 @@ handler.controllerFB = Botkit.facebookbot({
     debug: true,
     access_token: process.env.FB_PAGE_ACCESS_TOKEN,
     verify_token: process.env.FB_VERIFY_TOKEN,
-    storage: mongoStorage();
+    storage: mongoStorage()
 });
 
 var bot = handler.controllerFB.spawn({});
