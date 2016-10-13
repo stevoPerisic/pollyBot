@@ -271,7 +271,7 @@ handler.controllerFB.hears(['Start Survey'], 'message_received', function (bot,m
 });
 
 app.get('/users', function (req, res) {
-	storage.read('users', function(data){
+	handler.controllerFB.storage.users.all(function(data){
 		res.send(data);
 	});
 });
