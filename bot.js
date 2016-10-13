@@ -32,12 +32,12 @@ app.get('/webhook', function (req, res) {
 
 // generic function sending messages
 console.log('New mongo storage');
-console.log(mongoStorage);
+console.log(mongoStorage());
 handler.controllerFB = Botkit.facebookbot({
     debug: true,
     access_token: process.env.FB_PAGE_ACCESS_TOKEN,
     verify_token: process.env.FB_VERIFY_TOKEN,
-    storage: mongoStorage
+    storage: mongoStorage();
 });
 
 var bot = handler.controllerFB.spawn({});
