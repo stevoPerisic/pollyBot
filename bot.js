@@ -5,6 +5,8 @@ var jsonParser = bodyParser.json();
 var Botkit = require('botkit');
 var request = require('request');
 var handler = require('./lib/fb_handler'); // facebook bot handler
+// DB storage
+var mongoStorage = require('./lib/mongoStorage');
 
 app.get('/', function (req, res) {
 	res.sendStatus(200);
@@ -33,7 +35,8 @@ app.get('/webhook', function (req, res) {
 handler.controllerFB = Botkit.facebookbot({
     debug: true,
     access_token: process.env.FB_PAGE_ACCESS_TOKEN,
-    verify_token: process.env.FB_VERIFY_TOKEN
+    verify_token: process.env.FB_VERIFY_TOKEN,
+    storage: mongoStorage
 });
 
 var bot = handler.controllerFB.spawn({});
@@ -263,5 +266,11 @@ handler.controllerFB.hears(['Start Survey'], 'message_received', function (bot,m
 			}
 		});
 
+	});
+});
+
+app.get('/users', function (req, res) {
+	storage.read('users', function(data){
+		res.send(data);
 	});
 });
