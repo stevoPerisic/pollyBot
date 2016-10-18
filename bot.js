@@ -1,5 +1,5 @@
-var express = require('express');
-var app = express();
+// var express = require('express');
+// var app = express();
 var bodyParser = require('body-parser');
 var jsonParser = bodyParser.json();
 var Botkit = require('botkit');
@@ -9,7 +9,7 @@ var mongoStorage = require('./lib/mongoStorage');
 var handler = require('./lib/fb_handler'); // facebook bot handler
 
 
-module.exports = function(){
+module.exports = function(app){
 	handler.controllerFB = Botkit.facebookbot({
 	    debug: true,
 	    access_token: process.env.FB_PAGE_ACCESS_TOKEN,
