@@ -8,16 +8,11 @@ var handler = require('./lib/fb_handler'); // facebook bot handler
 // DB storage
 var mongoStorage = require('./lib/mongoStorage');
 
-app.get('/', function (req, res) {
-	res.sendStatus(200);
-});
+module.exports = function(){
 
-// server static files from the public folder
-app.use('/static', express.static(__dirname + '/public'));
+	return bot
+};
 
-app.listen((process.env.PORT || 5000), function () {
-  console.log('Listening on port 5000');
-});
 
 // Facebook webhook
 app.get('/webhook', function (req, res) {
@@ -56,8 +51,9 @@ app.post('/webhook', jsonParser, function (req, res) {
 // subscribe to page events
 request.post('https://graph.facebook.com/me/subscribed_apps?access_token=' + process.env.FB_PAGE_ACCESS_TOKEN,
   function (err, res, body) {
-    if (err) {
-      console.log('Could not subscribe to page messages')
+  	// console.log(JSON.parse(body).error);
+    if (err || JSON.parse(body).error) {
+      console.log('Could not subscribe to page messages');
     }
     else {
       console.log('Successfully subscribed to Facebook events:', body)
