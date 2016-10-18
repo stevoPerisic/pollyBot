@@ -7,17 +7,19 @@ var request = require('request');
 // DB storage
 var mongoStorage = require('./lib/mongoStorage');
 var handler = require('./lib/fb_handler'); // facebook bot handler
-handler.controllerFB = Botkit.facebookbot({
-    debug: true,
-    access_token: process.env.FB_PAGE_ACCESS_TOKEN,
-    verify_token: process.env.FB_VERIFY_TOKEN,
-    storage: mongoStorage()
-});
-// add our custom bot message handler because we are using express as our server for both the bot and the consumer/backend app
-handler.controllerFB.handlerFB = require('./lib/fb_handler');
-var bot = handler.controllerFB.spawn({});
+
 
 module.exports = function(){
+	handler.controllerFB = Botkit.facebookbot({
+	    debug: true,
+	    access_token: process.env.FB_PAGE_ACCESS_TOKEN,
+	    verify_token: process.env.FB_VERIFY_TOKEN,
+	    storage: mongoStorage()
+	});
+	// add our custom bot message handler because we are using express as our server for both the bot and the consumer/backend app
+	handler.controllerFB.handlerFB = require('./lib/fb_handler');
+	var bot = handler.controllerFB.spawn({});
+
 	// Facebook webhook
 	app.get('/webhook', function (req, res) {
 		// This enables subscription to the webhooks
@@ -33,7 +35,7 @@ module.exports = function(){
 	app.post('/webhook', jsonParser, function (req, res) {
 		console.log("FB request: \n");
 		console.log(req);
-		handler.FBhandler(req.body, bot)
+		handler.FBhandler(req.body, bot);
 	    res.sendStatus(200);
 	});
 
