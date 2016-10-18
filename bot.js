@@ -31,8 +31,8 @@ module.exports = function(){
 
 	// handler receiving messages
 	app.post('/webhook', jsonParser, function (req, res) {
-		// console.log("FB request: \n");
-		// console.log(req);
+		console.log("FB request: \n");
+		console.log(req);
 		handler.FBhandler(req.body, bot)
 	    res.sendStatus(200);
 	});
