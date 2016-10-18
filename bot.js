@@ -63,7 +63,7 @@ module.exports = function(app){
 			form: {
 				"setting_type":"greeting",
 				"greeting":{
-					"text":"Hi {{user_first_name}}, welcome to this Polly. Tap 'Get started' or type 'Start' to get started."
+					"text":"Hi {{user_first_name}}, welcome to Polly. Tap 'Get started' or type 'Start' to get started."
 				}
 			}
 		}, 
