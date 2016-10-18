@@ -115,7 +115,7 @@ module.exports = function(){
 
 	handler.controllerFB.on('facebook_postback', function (bot, message) {
 		var surveyResponse;
-
+		console.log(message);
 		if(message.payload === 'Get started'){
 			bot.reply(message, {
 		    	"attachment":{
