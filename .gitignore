@@ -10,3 +10,6 @@ node_modules
 
 # also hiding the dist folder for now
 dist
+
+# IDE files
+.idea/

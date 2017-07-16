@@ -10,9 +10,6 @@
     "request": "^2.75.0"
   },
   "description": "A slack bot written in node that does something cool.",
-  "engines": {
-    "node": "4.0.0"
-  },
   "keywords": [
     "bots",
     "chatbots",
